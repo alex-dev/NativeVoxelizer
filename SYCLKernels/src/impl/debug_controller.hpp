@@ -1,6 +1,7 @@
 #pragma once
 #include <lambda_allocated_allocator.hpp>
 #include <owning_array.hpp>
+#include "logger.hpp"
 #include "meshes_controller.hpp"
 
 namespace native_voxelizer::sycl_kernels::impl {
@@ -13,24 +14,21 @@ namespace native_voxelizer::sycl_kernels::impl {
 
 #pragma region Memory Management
   public:
-    debug_controller(logger& logger, sycl::queue& queue, meshes_controller& meshes_controller) noexcept
-        : logger{logger}, queue{queue}, meshes_controller{meshes_controller} {}
+    debug_controller(ext::guid const& guid, sycl::queue& queue, meshes_controller& meshes_controller) noexcept
+        : logger{guid, "controller.debug"}, queue{&queue}, meshes_controller{&meshes_controller} {}
     debug_controller(debug_controller const&) = delete;
     debug_controller(debug_controller&&) = default;
-#pragma endregion
 
-#pragma region Accessors
-  public:
-    logger& get_logger() noexcept { return logger; }
-    logger const& get_logger() const noexcept { return logger; }
+	debug_controller& operator=(debug_controller const&) = delete;
+	debug_controller& operator=(debug_controller&&) = default;
 #pragma endregion
 
   public:
     vector_collection get_debug_vertices(ext::guid const& id, allocator&& allocator) const;
 
   private:
-    logger& logger;
-    sycl::queue& queue;
-    meshes_controller& meshes_controller;
+    logger logger;
+    sycl::queue* queue;
+    meshes_controller* meshes_controller;
   };
 }

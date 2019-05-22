@@ -11,6 +11,9 @@ namespace native_voxelizer::sycl_kernels::impl {
     master_controller() = default;
     master_controller(master_controller const&) = delete;
     master_controller(master_controller&&) = default;
+
+	master_controller& operator=(master_controller const&) = delete;
+	master_controller& operator=(master_controller&&) = default;
 #pragma endregion
 
 #pragma region Accessors
@@ -22,16 +25,17 @@ namespace native_voxelizer::sycl_kernels::impl {
 #pragma endregion
 
   private:
+	ext::guid guid = {};
     sycl::queue queue = {sycl::default_selector{},
-                         [logger = logger{{}, "sycl.exception_handler"}](sycl::exception_list exceptions) mutable {
+                         [logger = logger{guid, "sycl.exception_handler"}](sycl::exception_list exceptions) mutable {
                            for (std::exception_ptr const& exception_ptr : exceptions)
                              try {
                                std::rethrow_exception(exception_ptr);
                              } catch (sycl::exception const& exception) {
-                               logger.error("exception") << exception.what();
+                               logger.error("handle_exception") << exception.what();
                              }
                          }};
-    meshes_controller meshes = {queue};
-    debug_controller debug = {queue, meshes};
+    meshes_controller meshes = {guid, queue};
+    debug_controller debug = {guid, queue, meshes};
   };
 }
